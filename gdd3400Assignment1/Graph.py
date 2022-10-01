@@ -109,22 +109,39 @@ class Graph():
 
 	def findPath_Breadth(self, start, end):
 		""" Breadth Search """
-		print("BREADTH")
+		print("BREADTH-FIRST")
 		self.reset()
 
-		# TODO: Implement Breadth-first Search
+		# TODO: Add your breadth-first code here!
 
-		# Return empty path indicating no path was found
+		toVisit = []
+		startNode = self.getNodeFromPoint(start)
+		startNode.isVisited = True
+		toVisit.append(startNode)
+
+		while len(toVisit) != 0:
+			currentNode = toVisit.pop(0)
+			currentNode.isExplored = True
+		
+			for neighbor in currentNode.neighbors:
+				if neighbor is self.getNodeFromPoint(end):
+					neighbor.backNode = currentNode
+					return self.buildPath(neighbor)
+					
+				if not neighbor.isVisited:
+					neighbor.backNode = currentNode
+					toVisit.append(neighbor)
+					neighbor.isVisited = True
+
 		return []
 
 	def findPath_Djikstra(self, start, end):
 		""" Djikstra's Search """
 		print("DJIKSTRA")
-		self.reset()
+		self.reset()		
 
-		# TODO: Implement Djikstra's Search
-		
-		# Return empty path indicating no path was found
+		# TODO: Add your Djikstra code here!
+
 		return []
 
 	def findPath_AStar(self, start, end):
@@ -132,9 +149,8 @@ class Graph():
 		print("A_STAR")
 		self.reset()
 
-		# TODO: Implement A Star Search
-		
-		# Return empty path indicating no path was found
+		# TODO: Add your A-star code here!
+
 		return []
 
 	def findPath_BestFirst(self, start, end):
@@ -142,9 +158,8 @@ class Graph():
 		print("BEST_FIRST")
 		self.reset()
 
-		# TODO: Implement Best First Search
-		
-		# Return empty path indicating no path was found
+		# TODO: Add your Best-first code here!
+
 		return []
 
 	def draw(self, screen):

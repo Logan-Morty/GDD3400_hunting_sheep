@@ -7,10 +7,8 @@ from Vector import Vector
 from DrawableObject import *
 
 class Agent(DrawableObject):
-	'''Agent class inherits from DrawableObject'''
 
 	def __init__(self, image, position, size, color, speed, angularSpeed):
-		'''Agent Constructor - initialize the agent'''
 		super().__init__(image, position, size, color)
 		self.maxSpeed = speed
 		self.speed = 0
@@ -20,33 +18,56 @@ class Agent(DrawableObject):
 		self.targetVelocity = self.velocity
 
 	def __str__(self):
-		'''Convert the agent to a string'''
-		return 'Agent (%s, %s, %s)' % (self.size, self.center, self.velocity)
+		return 'Agent (%d, %d, %d, %d)' % (self.size, self.center, self.velocity)
 
 	def setVelocity(self, velocity):
-		'''Set the velocity and normalize it'''
 		self.targetVelocity = velocity.normalize()
 
 	def moveTowardTargetVelocity(self):
-		'''Using rotational velocity, move toward the target velocity'''
 		velocityDiff = self.targetVelocity - self.velocity
 		if (velocityDiff.length() < self.angularSpeed):
 			self.velocity = self.targetVelocity
 		else:
-			velPerp = self.velocity.perpendicular()
-			# If the perpendicular velocity is in the same direction 
-			# as the velocity difference, use it, otherwise, reverse it
-			if velPerp.dot(velocityDiff) < 0:
-				velPerp = velPerp.scale(-1)
-			
-			# Add the perpendicular velocity to the current velocity and scale it
-			self.velocity += velPerp.normalize().scale(self.angularSpeed)
+			#self.velocity = self.velocity.lerp(self.targetVelocity, self.angularSpeed / velocityDiff.length())
+			self.velocity += velocityDiff.normalize().scale(self.angularSpeed)
 		self.velocity = self.velocity.normalize()
 
 	def update(self, bounds, graph, agents):
-		'''Update the agent'''
 		self.moveTowardTargetVelocity()
 		self.center = self.center + self.velocity.scale(self.speed)
+
+		## if both objects are in collision
+		#for index in self.boundingRect.collidelistall([agent.boundingRect for agent in agents]):
+		#	# Move them both apart along their collision vector
+		#	agent = agents[index]
+		#	dist = agent.center - self.center
+		#	# Determine which overlap is smaller and move that direction
+		#	if agent.center.x > self.center.x:
+		#		agent.center += Vector(dist.x, 0).scale(.5)
+		#		self.center -= Vector(dist.x, 0).scale(.5)
+		#	else:
+		#		agent.center -= Vector(dist.x, 0).scale(.5)
+		#		self.center += Vector(dist.x, 0).scale(.5)
+		#	if agent.center.y > self.center.y:
+		#		agent.center += Vector(0, dist.y).scale(.5)
+		#		self.center -= Vector(0, dist.y).scale(.5)
+		#	else:
+		#		agent.center -= Vector(0, dist.y).scale(.5)
+		#		self.center += Vector(0, dist.y).scale(.5)
+
+		## Check against all the obstacles
+		#for index in self.boundingRect.collidelistall([agent.boundingRect for agent in graph.obstacles]):
+		#	obstacle = graph.obstacles[index]
+		#	dist = obstacle.center - self.center
+		#	# Determine which overlap is smaller and move in that direction
+		#	if obstacle.center.x > self.center.x:
+		#		self.center -= Vector(dist.x, 0)
+		#	else:
+		#		self.center += Vector(dist.x, 0)
+		#	if obstacle.center.y > self.center.y:
+		#		self.center -= Vector(0, dist.y)
+		#	else:
+		#		self.center += Vector(0, dist.y)
 
 		# Check to make sure the object is still in the bounds of the world
 		self.center.x = max(self.boundingRect.width * 0.5, min(self.center.x, bounds.x - self.boundingRect.width * 0.5))
@@ -54,12 +75,10 @@ class Agent(DrawableObject):
 		self.calcSurface()
 
 	def draw(self, screen):
-		'''Draw the agent using its orientation'''
 		self.angle = math.degrees(math.atan2(-self.velocity.y, self.velocity.x)) - 90
 		super().draw(screen)
-
-		# If we want to draw the agent's velocity line, draw it
 		if Constants.DEBUG_VELOCITY:
+			# draw the bounding rect
 			pygame.draw.line(screen, self.color, (self.center.x, self.center.y), 
 					   (self.center.x + (self.velocity.x * self.boundingRect.width * 2), 
 						self.center.y + (self.velocity.y * self.boundingRect.height * 2)), 

@@ -16,7 +16,6 @@ class SearchType(Enum):
 class Player(Agent):
 
 	def __init__(self, image, position, size, color, speed, angularSpeed):
-		'''Initialize the player'''
 		super().__init__(image, position, size, color, speed, angularSpeed)
 		self.searchType = SearchType.A_STAR
 		self.gateNumber = 0
@@ -24,7 +23,6 @@ class Player(Agent):
 		self.path = []
 
 	def calculateHerdPosition(self, herd):
-		'''Calculate the center of the herd'''
 		position = Vector(0, 0)
 		for sheep in herd:
 			position += sheep.center
@@ -32,9 +30,6 @@ class Player(Agent):
 		return position.scale(1 / len(herd))
 
 	def update(self, bounds, graph, herd, gates):
-		'''Update the player'''
-
-		# Allow the user to select a search type
 		if pygame.key.get_pressed()[K_f]:
 			self.searchType = SearchType.BREADTH
 		elif pygame.key.get_pressed()[K_d]:
@@ -49,30 +44,24 @@ class Player(Agent):
 			# Find the sheep and head toward the sheep
 			herdPosition = self.calculateHerdPosition(herd)
 
-			# If the herdPosition is walkable, find a path
-			herdPosNode = graph.getNodeFromPoint(herdPosition)
-			if herdPosNode.isWalkable:
+			if self.searchType == SearchType.BREADTH:
+				self.path = graph.findPath_Breadth(self.center, herdPosition)
+			elif self.searchType == SearchType.DJIKSTRA:
+				self.path = graph.findPath_Djikstra(self.center, herdPosition)
+			elif self.searchType == SearchType.BEST:
+				self.path = graph.findPath_BestFirst(self.center, herdPosition)
+			elif self.searchType == SearchType.A_STAR:
+				self.path = graph.findPath_AStar(self.center, herdPosition)
 
-				# Select the appropriate search algorithm based on user input
-				if self.searchType == SearchType.BREADTH:
-					self.path = graph.findPath_Breadth(self.center, herdPosition)
-				elif self.searchType == SearchType.DJIKSTRA:
-					self.path = graph.findPath_Djikstra(self.center, herdPosition)
-				elif self.searchType == SearchType.BEST:
-					self.path = graph.findPath_BestFirst(self.center, herdPosition)
-				elif self.searchType == SearchType.A_STAR:
-					self.path = graph.findPath_AStar(self.center, herdPosition)
-
-				# If there is a path, start following it
-				if len(self.path) > 0:
-					self.isFollowingPath = True
-					self.target = self.path.pop(0).center
-					self.speed = self.maxSpeed
+			if len(self.path) > 0:
+				self.isFollowingPath = True
+				self.target = self.path.pop(0).center
+				self.speed = self.maxSpeed
 
 		# If we are following the path
 		else:
 			vectorToTarget = self.target - self.center
-			# If we've arrived at the first location in the path
+			# if we've arrived at the first location in the path
 			if (vectorToTarget).length() <= Constants.GRID_SIZE * .5:
 				# Go to next position in path, if there is one
 				if len(self.path) > 0:
@@ -83,5 +72,46 @@ class Player(Agent):
 					self.speed = 0
 			else:
 				self.setVelocity(vectorToTarget)
+
+		## If we need a new goal
+		#if not self.isFollowingPath:
+		#	# Find the herd position
+		#	herdPosition = self.calculateHerdPosition(herd)
+
+		#	# Find a position on the opposite side of the gate to which to drive the sheep
+		#	gateVector = (Vector(gates[self.gateNumber][0][0], gates[self.gateNumber][0][1]) \
+		#			     - Vector(gates[self.gateNumber][1][0], gates[self.gateNumber][1][1])).normalize()
+		#	gateMidPoint = (Vector(gates[self.gateNumber][0][0], gates[self.gateNumber][0][1]) 
+		#					+ Vector(gates[self.gateNumber][1][0], gates[self.gateNumber][1][1])).scale(.5)
+		#	gateGoalPoint = gateMidPoint + Vector(-gateVector.y, gateVector.x).scale(Constants.Grid_Size * 3)
+
+		#	# Find the vector between the sheep and the gate
+		#	gateToSheep = (herdPosition - gateMidPoint).normalize()
+
+		#	# Determine if we need to go to the next gate
+
+
+		#	# Aim to get the sheep 2 units BEYOND the gate
+		#	self.targetGatePoint = gateMidPoint + gateToSheep.Scale(Constants.GRID_SIZE * 2)
+
+		#	# if the herd is through the gate, pick the next gate
+		#	if (len(herdPosition) < 3):
+
+		#	newDogPosition = herdPosition + gateToSheep.scale(Constants.MIN_ATTACK_DIST) - Vector(Constants.GRID_SIZE, Constants.GRID_SIZE)
+
+		#	if self.searchType == SearchType.BREADTH:
+		#		self.path = graph.findPath_Breadth(self.position, newDogPosition)
+		#	elif self.searchType == SearchType.DJIKSTRA:
+		#		self.path = graph.findPath_Djikstra(self.position, newDogPosition)
+		#	elif self.searchType == SearchType.BEST:
+		#		self.path = graph.findPath_BestFirst(self.position, newDogPosition)
+		#	elif self.searchType == SearchType.A_STAR:
+		#		self.path = graph.findPath_AStar(self.position, newDogPosition)
+
+		#	if len(self.path) > 0:
+		#		self.isFollowingPath = True
+		#		self.target = self.path.pop(0).center
+
+
 
 		super().update(bounds, graph, [self] + [herd])
