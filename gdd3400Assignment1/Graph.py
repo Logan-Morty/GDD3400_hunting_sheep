@@ -109,10 +109,27 @@ class Graph():
 
 	def findPath_Breadth(self, start, end):
 		""" Breadth Search """
-		print("BREADTH")
+		print("BREADTH-FIRST")
 		self.reset()
 
-		# TODO: Implement Breadth-first Search
+		toVisit = []
+		startNode = self.getNodeFromPoint(start)
+		startNode.isVisited = True
+		toVisit.append(startNode)
+
+		while len(toVisit) != 0:
+			currentNode = toVisit.pop(0)
+			currentNode.isExplored = True
+		
+			for neighbor in currentNode.neighbors:
+				if neighbor is self.getNodeFromPoint(end):
+					neighbor.backNode = currentNode
+					return self.buildPath(neighbor)
+					
+				if not neighbor.isVisited:
+					neighbor.backNode = currentNode
+					toVisit.append(neighbor)
+					neighbor.isVisited = True
 
 		# Return empty path indicating no path was found
 		return []
