@@ -109,8 +109,6 @@ class Graph():
 
 	def findPath_Breadth(self, start, end):
 		""" Breadth Search """
-		import time
-		execution = time.time()
 		print("BREADTH-FIRST")
 		self.reset()
 
@@ -128,7 +126,6 @@ class Graph():
 			for neighbor in currentNode.neighbors:
 				if neighbor is endNode:
 					neighbor.backNode = currentNode
-					print("time:", time.time()-execution)
 					return self.buildPath(neighbor)
 					
 				if not neighbor.isVisited:
@@ -141,8 +138,6 @@ class Graph():
 
 	def findPath_Djikstra(self, start, end):
 		""" Djikstra's Search """
-		import time
-		execution = time.time()
 		print("DJIKSTRA")
 		self.reset()
 
@@ -161,7 +156,6 @@ class Graph():
 			currentNode.isExplored = True
 
 			if currentNode is endNode:
-				print("time:", time.time()-execution)
 				return self.buildPath(currentNode)
 			
 			for neighbor in currentNode.neighbors:
@@ -184,8 +178,6 @@ class Graph():
 
 	def findPath_AStar(self, start, end):
 		""" A Star Search """
-		import time
-		execution = time.time()
 		print("A_STAR")
 		self.reset()
 
@@ -203,7 +195,6 @@ class Graph():
 			currentNode.isExplored = True
 
 			if currentNode is endNode:
-				print("time:", time.time()-execution)
 				return self.buildPath(currentNode)
 			
 			for neighbor in currentNode.neighbors:
@@ -220,6 +211,7 @@ class Graph():
 				elif currCost + currentNode.cost < neighbor.costFromStart:
 					neighbor.costFromStart = currCost + currentNode.cost
 					neighbor.cost = neighbor.costFromStart + neighbor.costToEnd
+					print("cost to end", neighbor.costToEnd)
 					neighbor.backNode = currentNode
 
 		# TODO: Implement A Star Search
@@ -229,8 +221,6 @@ class Graph():
 
 	def findPath_BestFirst(self, start, end):
 		""" Best First Search """
-		import time
-		execution = time.time()
 		print("BEST_FIRST")
 		self.reset()
 
@@ -248,7 +238,6 @@ class Graph():
 			currentNode.isExplored = True
 
 			if currentNode is endNode:
-				print("time:", time.time()-execution)
 				return self.buildPath(currentNode)
 			
 			for neighbor in currentNode.neighbors:
