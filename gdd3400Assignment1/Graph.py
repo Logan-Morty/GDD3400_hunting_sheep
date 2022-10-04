@@ -9,6 +9,7 @@ from Node import *
 from enum import Enum
 
 class SearchType(Enum):
+	BREADTH = 0
 	DJIKSTRA = 1
 	A_STAR = 2
 	BEST_FIRST = 3
@@ -66,6 +67,10 @@ class Graph():
 
 	def getNodeFromPoint(self, point):
 		""" Get the node in the graph that corresponds to a point in the world """
+		point.x = max(0, min(point.x, Constants.WORLD_WIDTH - 1))
+		point.y = max(0, min(point.y, Constants.WORLD_HEIGHT - 1))
+
+		# Return the node that corresponds to this point
 		return self.nodes[int(point.y/Constants.GRID_SIZE)][int(point.x/Constants.GRID_SIZE)]
 
 	def placeObstacle(self, point, color):
@@ -109,148 +114,30 @@ class Graph():
 
 	def findPath_Breadth(self, start, end):
 		""" Breadth Search """
-		print("BREADTH-FIRST")
+		#print("Breadth")
 		self.reset()
 
-		toVisit = []
-		startNode = self.getNodeFromPoint(start)
-		startNode.isVisited = True
-		toVisit.append(startNode)
-		endNode = self.getNodeFromPoint(end)
-
-
-		while toVisit:
-			currentNode = toVisit.pop(0)
-			currentNode.isExplored = True
-		
-			for neighbor in currentNode.neighbors:
-				if neighbor is endNode:
-					neighbor.backNode = currentNode
-					return self.buildPath(neighbor)
-					
-				if not neighbor.isVisited:
-					neighbor.backNode = currentNode
-					toVisit.append(neighbor)
-					neighbor.isVisited = True
-
-		# Return empty path indicating no path was found
 		return []
 
 	def findPath_Djikstra(self, start, end):
 		""" Djikstra's Search """
-		print("DJIKSTRA")
+		#print("DJIKSTRA")
 		self.reset()
 
-		toVisit = []
-		startNode = self.getNodeFromPoint(start)
-		startNode.isVisited = True
-		startNode.costFromStart = 0
-		startNode.costToEnd = 0
-		startNode.cost = startNode.costFromStart + startNode.costToEnd
-		toVisit.append(startNode)
-		endNode = self.getNodeFromPoint(end)
-
-
-		while toVisit:
-			currentNode = toVisit.pop(0)
-			currentNode.isExplored = True
-
-			if currentNode is endNode:
-				return self.buildPath(currentNode)
-			
-			for neighbor in currentNode.neighbors:
-				currCost = ((currentNode.center.x - neighbor.center.x)**2 + 
-						 (currentNode.center.y - neighbor.center.y)**2)**0.5
-				if not neighbor.isVisited:
-					neighbor.isVisited = True
-					neighbor.costFromStart = currCost + currentNode.costFromStart
-					neighbor.costToEnd = 0
-					neighbor.cost = neighbor.costFromStart + neighbor.costToEnd
-					neighbor.backNode = currentNode
-					toVisit.append(neighbor)
-					toVisit = sorted(toVisit, key=lambda x: x.cost)
-				elif currCost + currentNode.cost < neighbor.cost:
-					neighbor.cost = currCost + currentNode.cost
-					neighbor.backNode = currentNode
-
-		# Return empty path indicating no path was found
 		return []
 
 	def findPath_AStar(self, start, end):
 		""" A Star Search """
-		print("A_STAR")
+		#print("A_STAR")
 		self.reset()
 
-		toVisit = []
-		startNode = self.getNodeFromPoint(start)
-		startNode.isVisited = True
-		startNode.costFromStart = 0
-		startNode.costToEnd = 0
-		startNode.cost = startNode.costFromStart + startNode.costToEnd
-		toVisit.append(startNode)
-		endNode = self.getNodeFromPoint(end)
-
-		while toVisit:
-			currentNode = toVisit.pop(0)
-			currentNode.isExplored = True
-
-			if currentNode is endNode:
-				return self.buildPath(currentNode)
-			
-			for neighbor in currentNode.neighbors:
-				costCalc = lambda x, y: ((x - neighbor.center.x)**2 + (y - neighbor.center.y)**2)**0.5
-				currCost = costCalc(currentNode.center.x, currentNode.center.y)
-				if not neighbor.isVisited:
-					neighbor.isVisited = True
-					neighbor.costFromStart = currCost + currentNode.costFromStart
-					neighbor.costToEnd = neighbor.costToEnd = costCalc(endNode.center.x, endNode.center.y)
-					neighbor.cost = neighbor.costFromStart + neighbor.costToEnd
-					neighbor.backNode = currentNode
-					toVisit.append(neighbor)
-					toVisit = sorted(toVisit, key=lambda x: x.cost)
-				elif currCost + currentNode.cost < neighbor.costFromStart:
-					neighbor.costFromStart = currCost + currentNode.cost
-					neighbor.cost = neighbor.costFromStart + neighbor.costToEnd
-					print("cost to end", neighbor.costToEnd)
-					neighbor.backNode = currentNode
-
-		# TODO: Implement A Star Search
-		
-		# Return empty path indicating no path was found
 		return []
 
 	def findPath_BestFirst(self, start, end):
 		""" Best First Search """
-		print("BEST_FIRST")
+		#print("BEST_FIRST")
 		self.reset()
 
-		toVisit = []
-		startNode = self.getNodeFromPoint(start)
-		startNode.isVisited = True
-		startNode.costFromStart = 0
-		startNode.costToEnd = 0
-		startNode.cost = startNode.costFromStart + startNode.costToEnd
-		toVisit.append(startNode)
-		endNode = self.getNodeFromPoint(end)
-
-		while toVisit:
-			currentNode = toVisit.pop(0)
-			currentNode.isExplored = True
-
-			if currentNode is endNode:
-				return self.buildPath(currentNode)
-			
-			for neighbor in currentNode.neighbors:
-				if not neighbor.isVisited:
-					neighbor.isVisited = True
-					neighbor.costFromStart = 0
-					neighbor.costToEnd = ((endNode.center.x - neighbor.center.x)**2 + 
-						 (endNode.center.y - neighbor.center.y)**2)**0.5
-					neighbor.cost = neighbor.costFromStart + neighbor.costToEnd
-					neighbor.backNode = currentNode
-					toVisit.append(neighbor)
-					toVisit = sorted(toVisit, key=lambda x: x.cost)
-		# Return empty path indicating no path was found
 		return []
 
 	def draw(self, screen):

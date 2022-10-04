@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.12
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "gdd3400Assignment1", "gdd3400Assignment1\gdd3400Assignment1.pyproj", "{3E53E151-587B-4265-BEA4-4FEB30003D6E}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "PythonSheepCompetition", "gdd3400Assignment1\PythonSheepCompetition.pyproj", "{3E53E151-587B-4265-BEA4-4FEB30003D6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
