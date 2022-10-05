@@ -58,66 +58,87 @@ class State:
 		pass
 
 			   
-class FindSheepState(State):
-	""" This is an example state that simply picks the first sheep to target """
-
+class FindSheepState(State):	
 	def update(self, gameState):
-		""" Update this state using the current gameState """
 		super().update(gameState)
 		dog = gameState.getDog()
 
-		# Pick a random sheep
-		dog.setTargetSheep(gameState.getHerd()[0])
+		if dog.getTargetSheep() is None:
+			closest = 0
+			herd = gameState.getHerd()
+			for i in range(len(herd)):
+				if (herd[i].center - dog.center).length() < (herd[closest].center - dog.center).length():
+					closest = i
+			dog.setTargetSheep(herd[closest])
+		return ApproachSheep()
 
-		# You could add some logic here to pick which state to go to next
-		# depending on the gameState
-
-		if not dog.isFollowingPath:
-			if (dog.center - dog.getTargetSheep().center).length() > 150:
-				dog.calculatePathToNewTarget(dog.getTargetSheep().center)
-			else:
-				return SteerSheep()
-
-		return Idle()
-
-class Idle(State):
-	""" This is an idle state where the dog does nothing """
-
+class ApproachSheep(State):
 	def update(self, gameState):
 		super().update(gameState)
-		
-		# Do nothing
-		if len(gameState.getHerd()) > 0:
-			return FindSheepState()
-		else:
-			return Idle()
+		dog = gameState.getDog()
+
+		if (dog.getTargetSheep().center - dog.center).length() > 200:
+			if not dog.isFollowingPath:
+				dog.calculatePathToNewTarget(dog.getTargetSheep().center)
+			return ApproachSheep()
+		return SteerSheep()
 
 class SteerSheep(State):
-	"""this decides which way to steer the sheep"""
 	def update(self, gameState):
 		super().update(gameState)
 		dog = gameState.getDog()
 		sheep = dog.getTargetSheep()
 
-		#entry coords: 448,304,144
-		
-		#print(finalGate[0][X] + GRID_SIZE * 0.5, finalGate[1][Y] - GRID_SIZE * 0.5, \
-		#								finalGate[1][X] - finalGate[0][X] - GRID_SIZE, GRID_SIZE)
+		if sheep in gameState.getHerd():
+			if sheep.center.y < 200:
+				return PushIntoPen()
+			return PushUpward()
+		dog.setTargetSheep(None)
+		return Idle()
+
+class PushIntoPen(State):
+	def update(self, gameState):
+		super().update(gameState)
+		dog = gameState.getDog()
+		sheep = dog.getTargetSheep()
 
 		if not dog.isFollowingPath:
 			if sheep.center.y > gameState.getPenBounds()[0][1]:
-				if sheep.center.x < gameState.getPenBounds()[0][0]:
-					dog.calculatePathToNewTarget(sheep.center + Vector(50, 50))
-				elif sheep.center.x > gameState.getPenBounds()[0][0] + 144:
-					dog.calculatePathToNewTarget(sheep.center + Vector(-50, 50))
-				else:
-					dog.calculatePathToNewTarget(sheep.center + Vector(0, 50))
-			elif sheep.center.y < gameState.getPenBounds()[0][1]:
-				if sheep.center.x < gameState.getPenBounds()[0][0]:
-					dog.calculatePathToNewTarget(sheep.center + Vector(-50, -50).scale(0.16))
-				elif sheep.center.x > gameState.getPenBounds()[0][0] + 144:
-					dog.calculatePathToNewTarget(sheep.center + Vector(50, -50).scale(0.16))
-				else:
-					dog.calculatePathToNewTarget(sheep.center + Vector(0, -50).scale(0.16))
+				return SteerSheep()
+			dog.calculatePathToNewTarget(sheep.center + 
+								Vector(sheep.center.x-WORLD_WIDTH/2,0).scale(0.1) + Vector(0, -30))		
+		if sheep not in gameState.getHerd():	
+			return Idle()
+		return PushIntoPen()
 
+class PushUpward(State):
+	def enter(self):
+		super().enter()
+		self.numAlt = 2
+		self.alt = 0
+
+	def update(self, gameState):
+		super().update(gameState)
+		dog = gameState.getDog()
+		sheep = dog.getTargetSheep()
+
+		if not dog.isFollowingPath and sheep in gameState.getHerd():
+			if sheep.center.y > 150:
+				if self.alt < self.numAlt:
+					dog.calculatePathToNewTarget(sheep.center + Vector(-50, 30))
+					self.alt += 1
+				elif self.alt < self.numAlt*2:
+					dog.calculatePathToNewTarget(sheep.center + Vector(50, 30))
+					self.alt += 1
+				else:
+					self.alt = 0
+				return PushUpward()
+			return SteerSheep()
+
+class Idle(State):
+	def update(self, gameState):
+		super().update(gameState)
+
+		if len(gameState.getHerd()) > 0:
+			return FindSheepState()
 		return Idle()
