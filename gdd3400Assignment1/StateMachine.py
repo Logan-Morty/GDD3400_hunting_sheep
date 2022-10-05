@@ -72,8 +72,11 @@ class FindSheepState(State):
 		# You could add some logic here to pick which state to go to next
 		# depending on the gameState
 
-		dog.calculatePathToNewTarget(dog.getTargetSheep().center)
-
+		if not dog.isFollowingPath:
+			if (dog.center - dog.getTargetSheep().center).length() > 150:
+				dog.calculatePathToNewTarget(dog.getTargetSheep().center)
+			else:
+				return SteerSheep()
 
 		return Idle()
 
@@ -88,3 +91,33 @@ class Idle(State):
 			return FindSheepState()
 		else:
 			return Idle()
+
+class SteerSheep(State):
+	"""this decides which way to steer the sheep"""
+	def update(self, gameState):
+		super().update(gameState)
+		dog = gameState.getDog()
+		sheep = dog.getTargetSheep()
+
+		#entry coords: 448,304,144
+		
+		#print(finalGate[0][X] + GRID_SIZE * 0.5, finalGate[1][Y] - GRID_SIZE * 0.5, \
+		#								finalGate[1][X] - finalGate[0][X] - GRID_SIZE, GRID_SIZE)
+
+		if not dog.isFollowingPath:
+			if sheep.center.y > gameState.getPenBounds()[0][1]:
+				if sheep.center.x < gameState.getPenBounds()[0][0]:
+					dog.calculatePathToNewTarget(sheep.center + Vector(50, 50))
+				elif sheep.center.x > gameState.getPenBounds()[0][0] + 144:
+					dog.calculatePathToNewTarget(sheep.center + Vector(-50, 50))
+				else:
+					dog.calculatePathToNewTarget(sheep.center + Vector(0, 50))
+			elif sheep.center.y < gameState.getPenBounds()[0][1]:
+				if sheep.center.x < gameState.getPenBounds()[0][0]:
+					dog.calculatePathToNewTarget(sheep.center + Vector(-50, -50).scale(0.16))
+				elif sheep.center.x > gameState.getPenBounds()[0][0] + 144:
+					dog.calculatePathToNewTarget(sheep.center + Vector(50, -50).scale(0.16))
+				else:
+					dog.calculatePathToNewTarget(sheep.center + Vector(0, -50).scale(0.16))
+
+		return Idle()

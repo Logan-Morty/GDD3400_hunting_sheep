@@ -86,6 +86,7 @@ class Dog(Agent):
 	def draw(self, screen):
 		super().draw(screen)
 		self.stateMachine.draw(screen)
+		pygame.draw.rect(screen, (255,255,255), pygame.Rect(448,304,144, 8))
 
 		if Constants.DEBUG_DOG_TARGET and self.targetSheep != None:
 			pygame.draw.line(screen, (255, 0, 0), (self.center.x, self.center.y), 
